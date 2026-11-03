@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <title>Alex Core Console</title>
+  <link rel="stylesheet" href="/dashboard-assets/dashboard.css">
+  <script src="/dashboard-assets/dashboard.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark" aria-hidden="true">A</div>
+    <div>
+      <p class="eyebrow">AI WORKFORCE FOUNDATION</p>
+      <h1>Alex Core <span>Console</span></h1>
+    </div>
+    <div id="overall-status" class="status-pill status-unknown" role="status">Checking service…</div>
+  </header>
+
+  <main>
+    <section class="notice" aria-label="Security notice">
+      <strong>Safety first.</strong>
+      This console can create missions, assign agents, and submit an internal agent-runtime task when you explicitly confirm a run. The current runtime records simulated task results; it does not perform live web searches, send email, or execute external connectors from the orchestration form. This form does not approve consequential actions or bypass the separate approval/permit gateway. Keep API keys private and never expose an unconfigured local-development backend publicly.
+    </section>
+
+    <section class="panel connection-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">LOCAL CONNECTION</p>
+          <h2>Connect to Alex</h2>
+        </div>
+        <span class="muted">Key stays in this browser tab</span>
+      </div>
+      <form id="connection-form">
+        <label for="api-key">API key <span class="muted">(optional only for local development)</span></label>
+        <div class="input-row">
+          <input id="api-key" name="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste API key here" aria-describedby="key-help">
+          <button type="submit" class="button primary">Connect &amp; refresh</button>
+          <button type="button" id="clear-key" class="button secondary">Clear key</button>
+        </div>
+        <p id="key-help" class="muted small">The key is held in sessionStorage for this tab only; it is not saved to localStorage or sent to any third-party service.</p>
+      </form>
+      <p id="connection-message" class="message" role="status">Not connected yet.</p>
+    </section>
+
+    <section class="metric-grid" aria-label="Service summary">
+      <article class="metric-card">
+        <p class="metric-label">Service</p>
+        <p id="service-value" class="metric-value">—</p>
+        <p id="service-detail" class="metric-detail">Waiting for health check</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-label">Orchestration storage</p>
+        <p id="storage-value" class="metric-value">—</p>
+        <p id="storage-detail" class="metric-detail">Runtime-reported configuration</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-label">Audit integrity</p>
+        <p id="audit-value" class="metric-value">—</p>
+        <p id="audit-detail" class="metric-detail">Runtime verification result</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-label">Pending approvals</p>
+        <p id="approval-value" class="metric-value">—</p>
+        <p id="approval-detail" class="metric-detail">Requires API access</p>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">TRUSTED CODE ONLY</p>
+            <h2>Registered connectors</h2>
+          </div>
+          <span id="connector-count" class="count-badge">—</span>
+        </div>
+        <p class="muted">Only connectors registered by trusted application code appear here.</p>
+        <div id="connectors-list" class="stack-list"><p class="empty-state">Connect to load the connector inventory.</p></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">HUMAN DECISIONS</p>
+            <h2>Pending approvals</h2>
+          </div>
+          <span id="approval-count" class="count-badge">—</span>
+        </div>
+        <p class="muted">Review only. Approval decisions and execution are not available from this page.</p>
+        <div id="approvals-list" class="stack-list"><p class="empty-state">Connect to load pending approvals.</p></div>
+      </article>
+    </section>
+
+    <section class="panel task-workspace" aria-labelledby="report-task-heading">
+      <div class="panel-heading">
+        <div><p class="eyebrow">PRACTICAL TASK · LOCAL OR CONFIGURED AI</p><h2 id="report-task-heading">Prepare a report from your notes</h2></div>
+      </div>
+      <p class="muted">Create a downloadable Markdown report using the local template by default, or choose the configured AI model. AI mode requires server-side provider configuration; the browser never receives the provider key. Both modes require human review.</p>
+      <p id="ai-provider-status" class="message" role="status" aria-live="polite">AI provider status has not been checked. Connect with an API key to check server-side configuration.</p>
+      <div class="input-row"><button id="ai-provider-test" type="button" class="button secondary" disabled>Test AI connection (admin)</button><span id="ai-provider-test-result" class="message" role="status" aria-live="polite">A connection test sends a short probe to the configured provider, not your report notes.</span></div>
+      <form id="report-task-form">
+        <label for="report-title">Report title</label>
+        <input id="report-title" maxlength="160" required placeholder="e.g. Project progress report">
+        <label for="report-audience">Audience (optional)</label>
+        <input id="report-audience" maxlength="120" placeholder="e.g. Project team or management">
+        <label for="report-notes">Your notes</label>
+        <textarea id="report-notes" rows="7" maxlength="12000" required placeholder="Paste notes here, one point per line where possible."></textarea>
+        <label class="checkbox-row" for="report-use-ai"><input id="report-use-ai" type="checkbox"> Use the configured AI model (may send these notes to your configured provider)</label>
+        <div class="input-row"><button id="report-task-submit" type="submit" class="button primary">Prepare report draft</button><button id="report-download" type="button" class="button secondary" disabled>Download Markdown</button></div>
+      </form>
+      <p id="report-task-message" class="message" role="status" aria-live="polite">No report has been created yet.</p>
+      <pre id="report-task-result" class="mission-result" aria-label="Generated report preview" hidden></pre>
+    </section>
+
+    <section class="panel" aria-labelledby="mission-heading">
+      <div class="panel-heading">
+        <div><p class="eyebrow">MISSION WORKSPACE · PREVIEW</p><h2 id="mission-heading">Create or inspect a mission</h2></div>
+      </div>
+      <p class="muted">Create or inspect missions, then assign registered agents. Assignment does not start a mission, approve actions, or execute external tools.</p>
+      <form id="mission-create-form">
+        <label for="mission-objective">Mission objective</label>
+        <textarea id="mission-objective" name="objective" rows="3" required maxlength="2000" placeholder="Describe what Alex should help accomplish"></textarea>
+        <div class="input-row mission-fields">
+          <div><label for="mission-budget">Budget limit</label><input id="mission-budget" name="budget" type="number" min="0" step="0.01" value="0" required></div>
+          <div><label for="mission-scope">Scope (optional)</label><input id="mission-scope" name="scope" maxlength="500" placeholder="Research, draft, summarize"></div>
+        </div>
+        <button type="submit" class="button primary">Create mission</button>
+      </form>
+      <hr>
+      <div class="mission-list-controls"><button id="mission-list-refresh" type="button" class="button secondary">Refresh mission list</button><span id="mission-list-count" class="tag">Not loaded</span></div>
+      <div id="mission-list" class="list-grid" aria-label="Existing missions"><p class="empty-state">Connect and refresh to load missions.</p></div>
+      <div class="history-panel" aria-labelledby="mission-recovery-heading">
+        <div class="mission-list-controls"><h3 id="mission-recovery-heading">Mission recovery queue</h3><button id="mission-recovery-refresh" type="button" class="button secondary">Refresh recovery queue</button><span id="mission-recovery-count" class="tag">Not loaded</span></div>
+        <p class="muted">Restart-recovered missions require human review. Decisions are audited and do not resume or retry work.</p>
+        <div id="mission-recovery-list" class="list-grid" aria-label="Missions awaiting recovery review"><p class="empty-state">Connect and refresh to load recovery queue.</p></div>
+        <p id="mission-recovery-message" class="message" role="status" aria-live="polite">No recovery decision has been made from this panel.</p>
+      </div>
+      <div class="history-panel" aria-labelledby="mission-audit-pending-heading">
+        <div class="mission-list-controls"><h3 id="mission-audit-pending-heading">Pending recovery audit delivery</h3><button id="mission-audit-pending-refresh" type="button" class="button secondary">Refresh pending audits</button><span id="mission-audit-pending-count" class="tag">Not loaded</span></div>
+        <p class="muted">If a recovery decision was saved but its audit write failed, it appears here. Retrying writes the audit record only; it does not repeat the decision or resume mission work.</p>
+        <div id="mission-audit-pending-list" class="list-grid" aria-label="Recovery decisions awaiting audit delivery"><p class="empty-state">Connect and refresh to load pending audit deliveries.</p></div>
+        <p id="mission-audit-pending-message" class="message" role="status" aria-live="polite">No audit retry has been requested from this panel.</p>
+      </div>
+      <form id="mission-lookup-form">
+        <label for="mission-lookup-id">Existing mission ID</label>
+        <div class="input-row"><input id="mission-lookup-id" name="mission_id" required maxlength="128" placeholder="Paste mission ID"><button type="submit" class="button secondary">Inspect mission</button></div>
+      </form>
+      <div class="assignment-panel" aria-labelledby="assignment-heading">
+        <h3 id="assignment-heading">Assign a registered agent</h3>
+        <p class="muted">Select a mission above or inspect it by ID, then assign an available agent. This action does not start the mission.</p>
+        <div class="input-row">
+          <label class="sr-only" for="agent-select">Registered agent</label>
+          <select id="agent-select" aria-label="Registered agent"><option value="">Load agents to choose</option></select>
+          <button id="assign-agent-button" type="button" class="button secondary" disabled>Assign agent</button>
+          <button id="agent-list-refresh" type="button" class="button secondary">Refresh agents</button>
+        </div>
+        <p id="assigned-agents" class="muted" aria-live="polite">Inspect a mission to see assigned agents.</p>
+      </div>
+      <div class="orchestration-panel" aria-labelledby="orchestration-heading">
+        <h3 id="orchestration-heading">Run a controlled agent task</h3>
+        <p class="muted">Submitting calls the authenticated orchestration API and starts an internal agent-runtime task. The current runtime simulates tool work; it does not make live provider calls. For an existing mission, its status must already be RUNNING and the chosen agent must be assigned.</p>
+        <form id="orchestration-form">
+          <label for="orchestration-objective">Task objective</label>
+          <textarea id="orchestration-objective" rows="3" maxlength="2000" required placeholder="Describe one bounded task for Alex"></textarea>
+          <div class="input-row orchestration-fields">
+            <div><label for="orchestration-task-type">Task type</label><input id="orchestration-task-type" value="research" maxlength="100" required></div>
+            <div><label for="orchestration-tool">Execution tool</label><input id="orchestration-tool" value="search_web" maxlength="100" required></div>
+            <div><label for="orchestration-budget">Budget limit</label><input id="orchestration-budget" type="number" min="0" step="0.01" value="0" required></div>
+          </div>
+          <label for="orchestration-tools">Required tools (comma-separated)</label>
+          <input id="orchestration-tools" value="search_web" maxlength="500" required>
+          <label for="orchestration-mission-id">Existing running mission ID (optional)</label>
+          <input id="orchestration-mission-id" maxlength="128" placeholder="Leave blank to create a new mission for this task">
+          <label for="orchestration-agent-ids">Candidate agent IDs (optional, comma-separated)</label>
+          <input id="orchestration-agent-ids" maxlength="500" placeholder="research, content">
+          <label for="orchestration-input">Task input JSON (optional)</label>
+          <textarea id="orchestration-input" rows="2" maxlength="4000" placeholder='{"context":"Optional context"}'></textarea>
+          <label class="confirm-line"><input id="orchestration-confirm" type="checkbox" required> I understand this submits a task to the internal agent runtime and may change mission/task state.</label>
+          <button id="orchestration-run-button" type="submit" class="button primary">Confirm &amp; run task</button>
+        </form>
+        <p id="orchestration-message" class="message" role="status" aria-live="polite">No task has been submitted from this workspace.</p>
+        <pre id="orchestration-result" class="mission-result" aria-label="Orchestration result" hidden></pre>
+      </div>
+      <div class="history-panel" aria-labelledby="orchestration-history-heading">
+        <div class="mission-list-controls">
+          <h3 id="orchestration-history-heading">Orchestration history &amp; recovery</h3>
+          <button id="orchestration-history-refresh" type="button" class="button secondary">Refresh history</button>
+          <span id="orchestration-history-count" class="tag">Not loaded</span>
+        </div>
+        <p class="muted">Inspect recent runs, statuses, and results. For uncertain runs, authorized operators can record one immutable acknowledgement or escalation decision. This records human review only; it does not prove the external outcome, change task status, or retry work. Alex does not automatically retry failed or uncertain tasks. Before entering the runtime, Alex durably records a minimal request summary and idempotency key when persistent storage is configured. If a restart interrupts a run, Alex marks it uncertain and never automatically retries it. Task input values are not copied into the recovery summary; only their keys and a SHA-256 digest are recorded.</p>
+        <div id="orchestration-history-list" class="list-grid" aria-label="Recent orchestration runs"><p class="empty-state">Connect and refresh to load orchestration history.</p></div>
+        <p id="orchestration-history-message" class="message" role="status" aria-live="polite">History is read-only.</p>
+      </div>
+      <p id="mission-message" class="message" role="status" aria-live="polite">Mission workspace ready. Connect with an API key that has mission permissions.</p>
+      <pre id="mission-result" class="mission-result" aria-label="Mission details" hidden></pre>
+    </section>
+
+    <section class="panel readiness-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">ADMINISTRATOR DIAGNOSTICS</p>
+          <h2>Runtime readiness</h2>
+        </div>
+        <span id="readiness-badge" class="status-pill status-unknown">Not checked</span>
+      </div>
+      <p class="muted">Read-only checks are advisory. A passing report is not a security audit and does not prove a live Google connection or successful email delivery.</p>
+      <div id="readiness-summary" class="readiness-summary"><p class="empty-state">Connect with an administrator key to inspect readiness.</p></div>
+    </section>
+
+    <footer>
+      <span>Alex Core · Human approval remains required for consequential actions.</span>
+      <a href="/docs">Open API documentation</a>
+    </footer>
+  </main>
+</body>
+</html>
