@@ -1,3 +1,0 @@
-# Optional dependency for Chromium UI tests; install a browser separately with:
-# python -m playwright install chromium
-playwright>=1.45

@@ -1,5 +1,0 @@
-Alex Core v3.32 recovery baseline
-
-This release was built from the actually available alex_core_v331.zip package extracted from the recovered bundle alex_ai_secretary_recovered_code_packages_partial_v2.zip. The recovered v3.31 source tree passed its existing test suite (214 passed) before this milestone's changes.
-
-The recovered bundle is a partial set of historical release archives, not a complete historical archive chain. This v3.32 package is the complete updated source tree for the available v3.31 baseline plus the v3.32 dashboard changes. It does not claim to restore unavailable archives such as alex_core_v37.zip or the specifically named alex_core_v38(3).zip.
