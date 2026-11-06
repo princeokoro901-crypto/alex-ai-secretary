@@ -24,6 +24,7 @@ from app.connectors.oauth_security import OAuthAuthorizationService, OAuthCreden
 from app.reconciliation.service import LifecycleReconciliationService
 from app.readiness import build_readiness_report
 from app.workspace import draft_report, WorkspaceInputError
+from app.reminder_workspace import ReminderStore, create_reminder
 from app.ai_workspace import draft_ai_report
 from app.llm_provider import LLMNotConfigured, LLMProviderError, provider_status, test_provider_connection
 import os
@@ -53,6 +54,7 @@ approval_service = ApprovalService(approval_path)
 execution_journal_path = os.getenv("ALEX_EXECUTION_JOURNAL_PATH")
 execution_journal = ExecutionJournal(execution_journal_path) if execution_journal_path else None
 execution_gateway = ExecutionGateway(approval_service, audit_log.record, execution_journal)
+reminder_store = ReminderStore(os.getenv("ALEX_REMINDER_DB_PATH"))  # v3.67: local workspace task
 connector_registry = ConnectorRegistry(execution_gateway)
 # No concrete provider adapters are registered by default. Real delivery needs
 # the explicit provider allowlist and global feature flag; Gmail additionally
@@ -192,6 +194,28 @@ def workspace_draft_report(payload: dict, request: Request):
          "external_actions_performed": False},
     )
     return result
+
+
+@app.post("/api/v1/workspace/create-reminder")
+def workspace_create_reminder(payload: dict, request: Request):
+    """Create a local reminder; no external calls, nothing sent anywhere."""
+    try:
+        result = create_reminder(payload, reminder_store)
+    except WorkspaceInputError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    actor = getattr(request.state, "actor", {"actor_id": "local:owner"})
+    audit_log.record(
+        "workspace_reminder_created", actor.get("actor_id", "unknown"),
+        result["task_id"], "create_reminder",
+        {"has_due_at": result["due_at"] is not None, "external_actions_performed": False},
+    )
+    return result
+
+
+@app.get("/api/v1/workspace/reminders")
+def workspace_list_reminders(request: Request):
+    """Reminders Alex has created (read-only)."""
+    return {"reminders": [r.__dict__ for r in reminder_store.list()], "persistent": reminder_store.persistent}
 
 
 @app.post("/api/v1/workspace/ai-draft-report")

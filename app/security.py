@@ -64,6 +64,8 @@ _ROUTE_PERMISSIONS = (
     ("POST", re.compile(r"^/api/v1/workforce/(recommend|route)$"), "workforce:read"),
     ("POST", re.compile(r"^/api/v1/workspace/draft-report$"), "missions:write"),
     ("POST", re.compile(r"^/api/v1/workspace/ai-draft-report$"), "missions:write"),
+    ("POST", re.compile(r"^/api/v1/workspace/create-reminder$"), "missions:write"),
+    ("GET", re.compile(r"^/api/v1/workspace/reminders$"), "missions:write"),
     ("POST", re.compile(r"^/api/v1/missions$"), "missions:write"),
     ("GET", re.compile(r"^/api/v1/missions$"), "missions:read"),
     # This collection is a read-only view; the separate pending-audit queue and
